@@ -51,7 +51,7 @@ fun RecipePrice(
     modifier: Modifier = Modifier
 ) {
     Text(
-        text = String.format("$ %.2f", recipe.price / 100),
+        text = "$ ${recipe.price.formatPrice()}",
         modifier = modifier
             .padding(start = 8.dp)
             .width(52.dp),
@@ -63,7 +63,7 @@ fun RecipePrice(
  * Static box with Price + Button
  */
 @Composable
-fun BottomView(addNewRecipe: () -> Unit) {
+fun BottomView(recipes: List<Recipe>, addNewRecipe: () -> Unit) {
     Column {
         Row(
             Modifier
@@ -75,7 +75,7 @@ fun BottomView(addNewRecipe: () -> Unit) {
                 modifier = Modifier.weight(1f),
                 color = MaterialTheme.colors.onSurface
             )
-            Text(text = "$ X", color = MaterialTheme.colors.onSurface)
+            Text(text = "$ ${recipes.sumOf { it.price }.formatPrice()}", color = MaterialTheme.colors.onSurface)
         }
         AddButton(addNewRecipe)
     }
@@ -124,8 +124,10 @@ fun ComponentsPreview2() {
                 RecipePrice(recipe = recipe)
                 RecipeName(recipe = recipe)
                 VerticalDivider(modifier = Modifier.padding(16.dp))
-                BottomView({})
+                BottomView(emptyList(), {})
             }
         }
     }
 }
+
+fun Double.formatPrice() = String.format("%.2f", this / 100)

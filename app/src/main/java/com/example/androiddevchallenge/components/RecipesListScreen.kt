@@ -38,7 +38,7 @@ fun RecipesListScreen(viewModel: RecipesListViewModel) {
             RecipeListView(Modifier.weight(1f), recipes)
         }
 
-        BottomView {
+        BottomView(recipes) {
             viewModel.generateAndAddANewRecipe()
         }
     }
