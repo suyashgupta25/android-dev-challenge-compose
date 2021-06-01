@@ -63,7 +63,7 @@ fun RecipePrice(
  * Static box with Price + Button
  */
 @Composable
-fun BottomView(onStateChange: (Boolean) -> Unit) {
+fun BottomView(addNewRecipe: () -> Unit) {
     Column {
         Row(
             Modifier
@@ -77,7 +77,7 @@ fun BottomView(onStateChange: (Boolean) -> Unit) {
             )
             Text(text = "$ X", color = MaterialTheme.colors.onSurface)
         }
-//        AddButton(onStateChange)
+        AddButton(addNewRecipe)
     }
 }
 

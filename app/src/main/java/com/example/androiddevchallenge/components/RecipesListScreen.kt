@@ -24,21 +24,23 @@ import com.example.androiddevchallenge.ui.theme.DarkGray
 import com.example.androiddevchallenge.ui.theme.MyTheme
 import com.example.androiddevchallenge.model.RecipesListViewModel
 import androidx.compose.foundation.lazy.items
+
 /**
  * Main task screen composable
  */
 @Composable
 fun RecipesListScreen(viewModel: RecipesListViewModel) {
     Column {
-        val recipes: MutableList<Recipe> by viewModel.recipes.observeAsState(mutableListOf())
+        val recipes: List<Recipe> by viewModel.recipes.observeAsState(emptyList())
         if (recipes.isEmpty()) {
             EmptyView(Modifier.weight(1f))
         } else {
-
             RecipeListView(Modifier.weight(1f), recipes)
         }
 
-        BottomView({})
+        BottomView {
+            viewModel.generateAndAddANewRecipe()
+        }
     }
 }
 
@@ -46,7 +48,7 @@ fun RecipesListScreen(viewModel: RecipesListViewModel) {
  * Displays list of recipes
  */
 @Composable
-fun RecipeListView(modifier: Modifier, recipes: MutableList<Recipe>) {
+fun RecipeListView(modifier: Modifier, recipes: List<Recipe>) {
     LazyColumn(
         modifier = modifier.background(DarkGray)
     ) {
@@ -67,7 +69,7 @@ fun RecipeListView(modifier: Modifier, recipes: MutableList<Recipe>) {
 @Composable
 fun AddButton(addNewRecipe: () -> Unit) {
     Button(
-        onClick = {  },
+        onClick = addNewRecipe,
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth(),
