@@ -6,24 +6,26 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.androiddevchallenge.model.OnDeleteRecipe
 import com.example.androiddevchallenge.model.Recipe
 import com.example.androiddevchallenge.model.RecipesDataGenerator
+import com.example.androiddevchallenge.model.RecipesListViewModel
 import com.example.androiddevchallenge.ui.theme.DarkGray
 import com.example.androiddevchallenge.ui.theme.MyTheme
-import com.example.androiddevchallenge.model.RecipesListViewModel
-import androidx.compose.foundation.lazy.items
 
 /**
  * Main task screen composable
@@ -32,10 +34,14 @@ import androidx.compose.foundation.lazy.items
 fun RecipesListScreen(viewModel: RecipesListViewModel) {
     Column {
         val recipes: List<Recipe> by viewModel.recipes.observeAsState(emptyList())
+        val recipesToDelete: List<Recipe> by viewModel.recipesToDelete.observeAsState(emptyList())
+
+
+
         if (recipes.isEmpty()) {
             EmptyView(Modifier.weight(1f))
         } else {
-            RecipeListView(Modifier.weight(1f), recipes)
+            RecipeListView(Modifier.weight(1f), recipes, recipesToDelete, viewModel)
         }
 
         BottomView(recipes) {
@@ -48,12 +54,21 @@ fun RecipesListScreen(viewModel: RecipesListViewModel) {
  * Displays list of recipes
  */
 @Composable
-fun RecipeListView(modifier: Modifier, recipes: List<Recipe>) {
+fun RecipeListView(
+    modifier: Modifier,
+    recipes: List<Recipe>,
+    recipesToDelete: List<Recipe>,
+    onDeleteRecipe: OnDeleteRecipe
+) {
     LazyColumn(
         modifier = modifier.background(DarkGray)
     ) {
         items(recipes) {
-            RecipeCard(recipe = it)
+            if (recipesToDelete.contains(it)) {
+                ConfirmDeletionCard(it, onDeleteRecipe)
+            } else {
+                RecipeCard(it, onDeleteRecipe)
+            }
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -84,15 +99,13 @@ fun AddButton(addNewRecipe: () -> Unit) {
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun RecipeCard(onClick: () -> Unit = {}, recipe: Recipe) {
+fun RecipeCard(recipe: Recipe, onDeleteRecipe: OnDeleteRecipe) {
     Card(
         Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .combinedClickable(
-                onLongClick = {
-                    /* TODO ask to remove the item using ConfirmDeletionCard */
-                },
+                onLongClick = { onDeleteRecipe.prepareForDeletion(recipe) },
                 onClick = {}
             )
     ) {
@@ -119,12 +132,7 @@ fun RecipeCard(onClick: () -> Unit = {}, recipe: Recipe) {
  * Card which shows a request to remove a particular recipe from the list
  */
 @Composable
-fun ConfirmDeletionCard(onClick: () -> Unit = {}) {
-    val recipeToDelete = Recipe(
-        name = RecipesDataGenerator.names.random(),
-        price = RecipesDataGenerator.randomPrice,
-        color = RecipesDataGenerator.randomColor
-    )
+fun ConfirmDeletionCard(recipeToDelete: Recipe, onDeleteRecipe: OnDeleteRecipe) {
     Card(
         Modifier
             .fillMaxWidth()
@@ -148,10 +156,10 @@ fun ConfirmDeletionCard(onClick: () -> Unit = {}) {
             ) {
                 val weightModifier = Modifier.weight(1f)
                 ConfirmationButton(text = "Yes", modifier = weightModifier) {
-                    /* TODO remove this item from the list */
+                    onDeleteRecipe.confirmForDeletion(recipeToDelete)
                 }
                 ConfirmationButton(text = "No", modifier = weightModifier) {
-                    /* TODO return to RecipeCard */
+                    onDeleteRecipe.cancelDeletion(recipeToDelete)
                 }
             }
         }
@@ -217,7 +225,20 @@ fun ComponentsPreview() {
             Column {
 //                RecipeCard({})
                 Spacer(modifier = Modifier.size(8.dp))
-                ConfirmDeletionCard()
+                ConfirmDeletionCard(
+                    Recipe(name = "My Recipe", price = 12.99, color = Color.Red),
+                    onDeleteRecipe = object: OnDeleteRecipe {
+                        override fun prepareForDeletion(recipe: Recipe) {
+
+                        }
+                        override fun confirmForDeletion(recipe: Recipe) {
+
+                        }
+                        override fun cancelDeletion(recipe: Recipe) {
+
+                        }
+                    }
+                )
             }
         }
     }
