@@ -12,6 +12,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,21 +22,23 @@ import com.example.androiddevchallenge.model.Recipe
 import com.example.androiddevchallenge.model.RecipesDataGenerator
 import com.example.androiddevchallenge.ui.theme.DarkGray
 import com.example.androiddevchallenge.ui.theme.MyTheme
-
+import com.example.androiddevchallenge.model.RecipesListViewModel
+import androidx.compose.foundation.lazy.items
 /**
  * Main task screen composable
  */
 @Composable
-fun RecipesListScreen() {
+fun RecipesListScreen(viewModel: RecipesListViewModel) {
     Column {
-        val emptyView = true
-        if (emptyView) {
+        val recipes: MutableList<Recipe> by viewModel.recipes.observeAsState(mutableListOf())
+        if (recipes.isEmpty()) {
             EmptyView(Modifier.weight(1f))
         } else {
-            RecipeListView(Modifier.weight(1f))
+
+            RecipeListView(Modifier.weight(1f), recipes)
         }
 
-        BottomView()
+        BottomView({})
     }
 }
 
@@ -43,12 +46,12 @@ fun RecipesListScreen() {
  * Displays list of recipes
  */
 @Composable
-fun RecipeListView(modifier: Modifier) {
+fun RecipeListView(modifier: Modifier, recipes: MutableList<Recipe>) {
     LazyColumn(
         modifier = modifier.background(DarkGray)
     ) {
-        items(0) {
-            RecipeCard()
+        items(recipes) {
+            RecipeCard(recipe = it)
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -62,9 +65,9 @@ fun RecipeListView(modifier: Modifier) {
  * Draws an "Add" button
  */
 @Composable
-fun AddButton() {
+fun AddButton(addNewRecipe: () -> Unit) {
     Button(
-        onClick = { /* TODO add a recipe */ },
+        onClick = {  },
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth(),
@@ -73,12 +76,13 @@ fun AddButton() {
     }
 }
 
+
 /**
  * Card which displays a recipe with name, color and price
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun RecipeCard(onClick: () -> Unit = {}) {
+fun RecipeCard(onClick: () -> Unit = {}, recipe: Recipe) {
     Card(
         Modifier
             .padding(horizontal = 16.dp)
@@ -90,11 +94,6 @@ fun RecipeCard(onClick: () -> Unit = {}) {
                 onClick = {}
             )
     ) {
-        val recipe = Recipe(
-            name = RecipesDataGenerator.names.random(),
-            price = RecipesDataGenerator.randomPrice,
-            color = RecipesDataGenerator.randomColor
-        )
         Row(
             Modifier
                 .padding(16.dp)
@@ -214,7 +213,7 @@ fun ComponentsPreview() {
     MyTheme {
         Surface {
             Column {
-                RecipeCard()
+//                RecipeCard({})
                 Spacer(modifier = Modifier.size(8.dp))
                 ConfirmDeletionCard()
             }
@@ -222,10 +221,10 @@ fun ComponentsPreview() {
     }
 }
 
-@Preview
-@Composable
-fun ScreenPreview() {
-    MyTheme {
-        RecipesListScreen()
-    }
-}
+//@Preview
+//@Composable
+//fun ScreenPreview() {
+//    MyTheme {
+//        RecipesListScreen(viewModel)
+//    }
+//}
